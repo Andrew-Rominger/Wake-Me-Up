@@ -15,6 +15,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <receiver android:name=".alarmReciver" android:enabled="true"  />
+        <receiver android:name=".changedReciver" android:enabled="true"/>
     </application>
 
 </manifest>

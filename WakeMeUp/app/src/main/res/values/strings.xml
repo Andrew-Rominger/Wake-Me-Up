@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Wake Me Up</string>
+    <string name="title_activity_main2">Main2Activity</string>
+    <string name="testView">testView</string>
+    <string name="Settings">settings</string>
+    <string name="placeholder">PlaceHolder. If you see this something is wrong! Please get in contact with me through google play to submit a bug report!</string>
+    <string name="strIsNotOn">Wake Me Up is not running! Tap the arrow to start waking up.</string>
+    <string name="strIsRunning">Wake Me Up is running!</string>
 </resources>
