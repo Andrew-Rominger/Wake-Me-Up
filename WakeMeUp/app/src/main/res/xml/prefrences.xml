@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+        <ListPreference
+            android:key="pref_alrm"
+            android:title="Set Volume on Alarm"
+            android:summary="Sets the alarm volume to the selected level when an alarm goes off"
+            />
+
+
+
+
+
+</PreferenceScreen>

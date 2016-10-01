@@ -12,14 +12,12 @@ import android.util.Log;
  * Created by Andrew on 9/29/2016.
  */
 
-public class changedReciver extends BroadcastReceiver {
+public class changedReciver extends BroadcastReceiver
+{
+    PendingIntent volumePendingIntent;
     MainActivity ma;
     public changedReciver()
     {}
-    public changedReciver(MainActivity ma)
-    {
-        this.ma = ma;
-    }
     @Override
     public void onReceive(Context context, Intent intent)
     {
@@ -34,22 +32,22 @@ public class changedReciver extends BroadcastReceiver {
 
         if(mgr.getNextAlarmClock() != null)
         {
-            if(ma.pendingIntent != null)
+            if(volumePendingIntent != null)
             {
-                ma.pendingIntent.cancel();
+                volumePendingIntent.cancel();
             }
             Long l = mgr.getNextAlarmClock().getTriggerTime();
-            PendingIntent pendingIntent = PendingIntent.getBroadcast(ma, 0, new Intent(ma,alarmReciver.class),PendingIntent.FLAG_UPDATE_CURRENT);
-            ma.pendingIntent = pendingIntent;
-            ma.mgr.setExact(AlarmManager.RTC_WAKEUP, l+1,pendingIntent);
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(ma, 0, new Intent(ma,alarmReciverVolume.class),PendingIntent.FLAG_UPDATE_CURRENT);
+            volumePendingIntent = pendingIntent;
+            mgr.setExact(AlarmManager.RTC, l+1, pendingIntent);
             Log.d("next alarm changed to ", l.toString());
         }
         else
         {
             Log.i("Was Null", "Error");
-            if(ma.pendingIntent != null)
+            if(volumePendingIntent != null)
             {
-                ma.pendingIntent.cancel();
+                volumePendingIntent.cancel();
                 Log.i("Cancled", "no more alarm");
             }
         }

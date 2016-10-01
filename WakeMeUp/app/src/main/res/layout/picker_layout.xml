@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:weightSum="1">
+            <TimePicker
+                android:layout_width="match_parent"
+                android:numbersBackgroundColor="@color/white"
+                android:numbersSelectorColor="@color/black"
+                android:numbersTextColor="@android:color/holo_blue_bright"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:id="@+id/timePicker"
+                android:paddingBottom="10dp"/>
+            <DatePicker
+                android:layout_width="wrap_content"
+                android:layout_gravity="center"
+                android:calendarTextColor="@color/colorPrimary"
+                android:layout_height="0dp"
+                android:id="@+id/datePicker"
+                android:layout_weight="1" />
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/add_alarm"
+                android:layout_gravity="center"
+                android:background="@color/colorPrimaryDark"
+                android:textColor="@color/colorAccent"/>
+
+        </LinearLayout>
+    </ScrollView>
+
+
+</LinearLayout>

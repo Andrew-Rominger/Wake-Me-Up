@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="arominger.com.wakemeup">
 
+    <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -16,8 +18,20 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name=".alarmReciver" android:enabled="true"  />
-        <receiver android:name=".changedReciver" android:enabled="true"/>
+        <receiver
+            android:name=".alarmReciverVolume"
+            android:enabled="true" />
+        <receiver
+            android:name=".changedReciver"
+            android:enabled="true" />
+        <receiver
+            android:name=".alarmReciver"
+            android:enabled="true" />
+        <receiver
+            android:name=".dismissedreciver"
+            android:enabled="true" />
+
+        <activity android:name=".SettingsActivity"></activity>
     </application>
 
 </manifest>

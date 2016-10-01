@@ -6,4 +6,6 @@
     <string name="placeholder">PlaceHolder. If you see this something is wrong! Please get in contact with me through google play to submit a bug report!</string>
     <string name="strIsNotOn">Wake Me Up is not running! Tap the arrow to start waking up.</string>
     <string name="strIsRunning">Wake Me Up is running!</string>
+    <string name="addalarm">addAlarm</string>
+    <string name="add_alarm">Add Alarm</string>
 </resources>

@@ -6,5 +6,12 @@
         android:icon="@drawable/wrench"
         app:showAsAction="ifRoom"
         />
+    <item android:id="@+id/action_add"
+        android:title="@string/addalarm"
+        android:icon="@drawable/ic_add_circle_outline_black_24dp"
+        app:showAsAction="ifRoom"
+        android:onClick="makeNewAlarm"
+        />
+
 
 </menu>

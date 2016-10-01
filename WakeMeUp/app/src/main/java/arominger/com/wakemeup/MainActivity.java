@@ -1,38 +1,51 @@
 package arominger.com.wakemeup;
 
 import android.app.AlarmManager;
+import android.app.DialogFragment;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
+import android.media.AudioManager;
 import android.os.Build;
-import android.provider.AlarmClock;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.provider.AlarmClock;
+import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.AccelerateInterpolator;
 import android.view.animation.Animation;
-import android.view.animation.Interpolator;
-import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Random;
 
 
-public class MainActivity extends AppCompatActivity
+public class MainActivity extends AppCompatActivity implements pickerListner
 {
+
+
+    private static final String TAG = MainActivity.class.getSimpleName();
     ImageView arrow;
     Random rand = new Random();
-    public PendingIntent pendingIntent;
+
+    PendingIntent alarmPendingIntent;
     boolean IS_ON;
     public AlarmManager mgr;
+
     MainActivity ma = this;
     changedReciver cr;
     TextView isOn;
@@ -46,37 +59,61 @@ public class MainActivity extends AppCompatActivity
             "Where did that sheep come from?",
             "Time for some ZZZ's!",
     };
+    private int newAlarmHour;
+    private int newAlarmMinute;
+    private int dayPicked;
+    private int monthPicked;
+    private int yearPicked;
 
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
+        AudioManager am = (AudioManager)this.getSystemService(Context.AUDIO_SERVICE);
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        String vs = sharedPref.getString("pref_alrm", "100%");
+        Log.i("max alarm:", vs);
+        int max;
+        if(vs.length() == 3)
+        {
+            vs =  vs.substring(0,2);
+            vs = "." + vs;
+            float f = Float.parseFloat(vs);
+            max = (int) (am.getStreamMaxVolume(AudioManager.STREAM_ALARM) * f);
 
-
-        mgr = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+        }
+        else
+        {
+            max = am.getStreamMaxVolume(AudioManager.STREAM_ALARM);
+        }
+        Log.i("Max:", "" + max);
         IS_ON = false;
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //Declare Managers
+       mgr = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);;
+
+
+        //Declare Views
         isOn = (TextView) findViewById(R.id.mainIsOn);
-        isOn.setText(R.string.strIsNotOn);
-
-
+        arrow = (ImageView) findViewById(R.id.arrow_button);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        final Drawable arrowW = getDrawable(R.drawable.arrow);
+
+
+
+        //Set Toolbar
         setSupportActionBar(toolbar);
 
-        arrow = (ImageView) findViewById(R.id.arrow_button);
-        final RotateAnimation rotateOnClick = new RotateAnimation(0,180,Animation.RELATIVE_TO_SELF,0.5f,Animation.RELATIVE_TO_SELF,0.5f);
-        rotateOnClick.setDuration(300);
-        rotateOnClick.setInterpolator(new LinearInterpolator());
-        rotateOnClick.setFillBefore(true);
-
-        final Drawable onToOff = getDrawable(R.drawable.arrow);
-        final Drawable offToOn = getDrawable(R.drawable.ic_arrow_on);
-
-        rotateOnClick.setAnimationListener(new Animation.AnimationListener()
-        {
+        //Animations
+        final RotateAnimation rotateToTop = new RotateAnimation(0,180,Animation.RELATIVE_TO_SELF,0.5f,Animation.RELATIVE_TO_SELF,0.5f);
+            rotateToTop.setDuration(300);
+            rotateToTop.setInterpolator(new AccelerateInterpolator());
+            rotateToTop.setFillAfter(true);
+            rotateToTop.setAnimationListener(new Animation.AnimationListener() {
             Drawable df;
             @Override
             public void onAnimationStart(Animation animation) {
@@ -86,24 +123,39 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onAnimationEnd(Animation animation)
             {
-                if(IS_ON)
-                {
-                    df = onToOff;
-                    //Toast.makeText(MainActivity.this,"is on is true", Toast.LENGTH_SHORT).show();
-                    IS_ON = false;
-                    isOn.setText(R.string.strIsNotOn);
-                    arrow.setImageDrawable(df);
+                String text = getResources().getString(R.string.strIsRunning) + " " + stringarr[rand.nextInt(stringarr.length - 1)];
+                isOn.setText(text);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    arrowW.setTint(getResources().getColor(R.color.colorAccent,  null));
                 }
-                else {
-                    df = offToOn;
-                    IS_ON = true;
-                    //Toast.makeText(MainActivity.this,"is on is false", Toast.LENGTH_SHORT).show();
-                    int n = rand.nextInt(stringarr.length-1);
-                    String toBed = getString(R.string.strIsRunning) + " " + stringarr[n];
-                    isOn.setText(toBed);
-                    arrow.setImageDrawable(df);
+                //arrow.animate().rotationBy(180f).setDuration(300).setInterpolator(new AccelerateInterpolator()).start();
+                arrow.setImageDrawable(arrowW);
 
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        final RotateAnimation rotateToBottom = new RotateAnimation(180,0, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+            rotateToBottom.setDuration(300);
+            rotateToBottom.setInterpolator(new AccelerateInterpolator());
+            rotateToBottom.setFillAfter(true);
+            rotateToBottom.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                isOn.setText(R.string.strIsNotOn);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    arrowW.setTint(getResources().getColor(R.color.colorPrimaryDark,  null));
                 }
+                arrow.setImageDrawable(arrowW);
+
             }
 
             @Override
@@ -112,35 +164,54 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+        //Set Values
+        isOn.setText(R.string.strIsNotOn);
+        assert arrowW != null;
+        Drawable mDrawableArrow = arrowW.mutate();
+        mDrawableArrow = DrawableCompat.wrap(mDrawableArrow);
 
-        arrow.setOnClickListener(new View.OnClickListener() {
+
+
+
+        //Arrow color change
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+        {
+            DrawableCompat.setTint(mDrawableArrow, getResources().getColor(R.color.colorPrimaryDark, null));
+        }
+        arrow.setImageDrawable(arrowW);
+
+
+        arrow.setOnClickListener(new View.OnClickListener()
+        {
             @Override
             public void onClick(View v)
             {
                 if(IS_ON)
                 {
                     Log.i("unregistering", "Was on");
-                    ma.unregisterReceiver(ma.cr);
+                    //ma.unregisterReceiver(cr);
+                    MainActivity.this.arrow.startAnimation(rotateToBottom);
+                    IS_ON = false;
                 }
                 else
                 {
-                    Log.i("register", "Was off");
-                    ma.cr = new changedReciver(ma);
-                    ma.registerReceiver(cr, new IntentFilter(AlarmManager.ACTION_NEXT_ALARM_CLOCK_CHANGED));
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        ma.registerReceiver(cr, new IntentFilter(AlarmClock.ACTION_DISMISS_ALARM));
+                    /*
+                    if(mgr.getNextAlarmClock() != null)
+                    {
+                        Log.i(TAG, "Next alarm at " + mgr.getNextAlarmClock().getTriggerTime());
                     }
+
+                    cr = new changedReciver();
+                    registerReceiver(cr, new IntentFilter(AlarmManager.ACTION_NEXT_ALARM_CLOCK_CHANGED));
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        registerReceiver(cr, new IntentFilter(AlarmClock.ACTION_DISMISS_ALARM));
+                    }
+                    */
+                    MainActivity.this.arrow.startAnimation(rotateToTop);
+                    IS_ON = true;
                 }
-
-
-                arrow.startAnimation(rotateOnClick);
-
             }
         });
-    }
-
-    public MainActivity() {
-        super();
     }
 
     @Override
@@ -152,8 +223,15 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
+
         switch (item.getItemId()){
             case R.id.action_gotosettings:
+                Log.i("settings","Settings");
+                startActivity(new Intent(MainActivity.this, SettingsActivity.class));
+                break;
+            default:
+
+                break;
 
 
         }
@@ -161,5 +239,54 @@ public class MainActivity extends AppCompatActivity
     }
 
 
+    public void makeNewAlarm(MenuItem item)
+    {
+        DialogFragment datePicker = new datePicker();
+        datePicker.show(getFragmentManager(), "datePicker");
+        DialogFragment timePicker = new timePicker();
+        timePicker.show(getFragmentManager(), "picker");
 
+    }
+
+    @Override
+    public void setTimes(int hourPicked, int minutePicked)
+    {
+        this.newAlarmHour = hourPicked;
+        this.newAlarmMinute = minutePicked;
+    }
+
+    @Override
+    public void setDates(int dayPicked, int monthPicked, int yearPicked)
+    {
+        this.dayPicked = dayPicked;
+        this.monthPicked = monthPicked;
+        this.yearPicked = yearPicked;
+        createNewAlarm(newAlarmMinute,newAlarmHour,dayPicked,monthPicked,yearPicked);
+
+    }
+    private void createNewAlarm(int minute, int hour, int day, int month, int year)
+    {
+        AlarmManager mgr = (AlarmManager) this.getSystemService(ALARM_SERVICE);
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy, HH:mm");
+        Calendar c = Calendar.getInstance();
+        //Log.i(TAG, "" + month);
+
+        c.set(Calendar.YEAR, year);
+        c.set(Calendar.DAY_OF_YEAR, day);
+        c.set(Calendar.MINUTE, minute);
+        c.set(Calendar.HOUR, hour);
+        c.set(Calendar.SECOND, 0);
+        c.add(Calendar.MONTH, month - c.get(Calendar.MONTH));
+
+
+        alarmPendingIntent = PendingIntent.getBroadcast(this,1,new Intent(MainActivity.this, alarmReciver.class), PendingIntent.FLAG_UPDATE_CURRENT);
+        Log.v("Before: ", "" + mgr.getNextAlarmClock().getTriggerTime());
+        mgr.setExact(AlarmManager.RTC, c.getTimeInMillis(), alarmPendingIntent);
+        Log.v("Entered: ", "" + c.getTimeInMillis());
+        Log.v("After: ", "" + mgr.getNextAlarmClock().getTriggerTime());
+        Toast.makeText(this, "New alarm: " + sdf.format(c.getTime()), Toast.LENGTH_LONG).show();
+
+
+    }
 }
+
