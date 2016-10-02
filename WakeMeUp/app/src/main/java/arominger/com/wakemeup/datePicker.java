@@ -44,6 +44,6 @@ public class datePicker extends DialogFragment implements DatePickerDialog.OnDat
 
         pickerListner pickerlistner = (pickerListner) getActivity();
         pickerlistner.setDates(day,this.month,this.year);
-        Log.i("Setting date" , "");
+        Log.i("Setting date" , "test");
     }
 }

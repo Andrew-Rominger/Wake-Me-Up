@@ -15,7 +15,6 @@ import android.util.Log;
 public class changedReciver extends BroadcastReceiver
 {
     PendingIntent volumePendingIntent;
-    MainActivity ma;
     public changedReciver()
     {}
     @Override
@@ -23,11 +22,7 @@ public class changedReciver extends BroadcastReceiver
     {
         AlarmManager mgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         AudioManager am = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
-        if(am.getStreamVolume(AudioManager.STREAM_ALARM) != 0)
-        {
-            am.setStreamVolume(AudioManager.STREAM_ALARM, 0,AudioManager.FLAG_PLAY_SOUND);
-            Log.i("Set volume to min", "min");
-        }
+
 
 
         if(mgr.getNextAlarmClock() != null)
@@ -37,7 +32,7 @@ public class changedReciver extends BroadcastReceiver
                 volumePendingIntent.cancel();
             }
             Long l = mgr.getNextAlarmClock().getTriggerTime();
-            PendingIntent pendingIntent = PendingIntent.getBroadcast(ma, 0, new Intent(ma,alarmReciverVolume.class),PendingIntent.FLAG_UPDATE_CURRENT);
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, new Intent(context,alarmReciverVolume.class),PendingIntent.FLAG_UPDATE_CURRENT);
             volumePendingIntent = pendingIntent;
             mgr.setExact(AlarmManager.RTC, l+1, pendingIntent);
             Log.d("next alarm changed to ", l.toString());

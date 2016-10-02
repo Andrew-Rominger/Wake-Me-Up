@@ -38,7 +38,7 @@ public class timePicker extends DialogFragment implements TimePickerDialog.OnTim
 
         pickerListner pickerlistner = (pickerListner) getActivity();
         pickerlistner.setTimes(hourpicked,minutepicked);
-        Log.i("Setting time" , "");
+        Log.i("Setting time" , "test");
     }
 
 

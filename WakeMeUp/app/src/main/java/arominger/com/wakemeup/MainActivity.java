@@ -41,10 +41,12 @@ public class MainActivity extends AppCompatActivity implements pickerListner
     private static final String TAG = MainActivity.class.getSimpleName();
     ImageView arrow;
     Random rand = new Random();
+    PendingIntent pendingIntent;
 
-    PendingIntent alarmPendingIntent;
+
     boolean IS_ON;
     public AlarmManager mgr;
+    AlarmManager manager;
 
     MainActivity ma = this;
     changedReciver cr;
@@ -70,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements pickerListner
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
+        manager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         AudioManager am = (AudioManager)this.getSystemService(Context.AUDIO_SERVICE);
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         String vs = sharedPref.getString("pref_alrm", "100%");
@@ -195,7 +198,7 @@ public class MainActivity extends AppCompatActivity implements pickerListner
                 }
                 else
                 {
-                    /*
+
                     if(mgr.getNextAlarmClock() != null)
                     {
                         Log.i(TAG, "Next alarm at " + mgr.getNextAlarmClock().getTriggerTime());
@@ -206,7 +209,7 @@ public class MainActivity extends AppCompatActivity implements pickerListner
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         registerReceiver(cr, new IntentFilter(AlarmClock.ACTION_DISMISS_ALARM));
                     }
-                    */
+
                     MainActivity.this.arrow.startAnimation(rotateToTop);
                     IS_ON = true;
                 }
@@ -266,25 +269,29 @@ public class MainActivity extends AppCompatActivity implements pickerListner
     }
     private void createNewAlarm(int minute, int hour, int day, int month, int year)
     {
-        AlarmManager mgr = (AlarmManager) this.getSystemService(ALARM_SERVICE);
-        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy, HH:mm");
-        Calendar c = Calendar.getInstance();
-        //Log.i(TAG, "" + month);
 
-        c.set(Calendar.YEAR, year);
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy, hh:mm aa", Locale.US);
+        Calendar c = Calendar.getInstance();
+        PendingIntent pendingIntent;
+        Log.i(TAG, "Hour: " + hour);
+        Log.i(TAG, "Minute: " + minute);
+        Log.i(TAG, "Day: " + day);
+        Log.i(TAG, "Month: " + month);
+        Log.i(TAG, "Year: " + year);
+
+
+        c.set(Calendar.YEAR,year);
         c.set(Calendar.DAY_OF_YEAR, day);
         c.set(Calendar.MINUTE, minute);
-        c.set(Calendar.HOUR, hour);
+        c.set(Calendar.HOUR_OF_DAY, hour);
         c.set(Calendar.SECOND, 0);
         c.add(Calendar.MONTH, month - c.get(Calendar.MONTH));
 
+        Intent i = new Intent(this, alarmReciver.class);
+        pendingIntent = PendingIntent.getBroadcast(this, 2, i,PendingIntent.FLAG_UPDATE_CURRENT);
+        manager.setExact(AlarmManager.RTC_WAKEUP, c.getTimeInMillis(), pendingIntent);
 
-        alarmPendingIntent = PendingIntent.getBroadcast(this,1,new Intent(MainActivity.this, alarmReciver.class), PendingIntent.FLAG_UPDATE_CURRENT);
-        Log.v("Before: ", "" + mgr.getNextAlarmClock().getTriggerTime());
-        mgr.setExact(AlarmManager.RTC, c.getTimeInMillis(), alarmPendingIntent);
-        Log.v("Entered: ", "" + c.getTimeInMillis());
-        Log.v("After: ", "" + mgr.getNextAlarmClock().getTriggerTime());
-        Toast.makeText(this, "New alarm: " + sdf.format(c.getTime()), Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "New alarm: " + sdf.format(new Date(c.getTimeInMillis())), Toast.LENGTH_LONG).show();
 
 
     }

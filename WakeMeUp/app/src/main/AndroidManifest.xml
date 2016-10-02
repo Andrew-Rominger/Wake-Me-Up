@@ -17,6 +17,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".SettingsActivity"/>
 
         <receiver
             android:name=".alarmReciverVolume"
@@ -25,13 +26,14 @@
             android:name=".changedReciver"
             android:enabled="true" />
         <receiver
-            android:name=".alarmReciver"
-            android:enabled="true" />
-        <receiver
             android:name=".dismissedreciver"
             android:enabled="true" />
+        <receiver android:name=".alarmReciver" android:enabled="true"/>
 
-        <activity android:name=".SettingsActivity"></activity>
+        <service android:name=".AlarmPlayingService"/>
+
+
+
     </application>
 
 </manifest>
