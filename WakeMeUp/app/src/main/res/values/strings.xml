@@ -8,4 +8,8 @@
     <string name="strIsRunning">Wake Me Up is running!</string>
     <string name="addalarm">addAlarm</string>
     <string name="add_alarm">Add Alarm</string>
+    <string name="alarm">ALARM</string>
+    <string name="time">TIME</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="snooze">Snooze</string>
 </resources>

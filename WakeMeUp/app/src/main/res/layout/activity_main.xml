@@ -17,46 +17,13 @@
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
         />
-    <ScrollView
+
+    <ListView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/scroll"
-        android:layout_below="@id/toolbar"
-        android:layout_alignParentBottom="true">
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/pickerContrainer"
-                />
-
-            <ImageView
-                android:layout_width="200dp"
-                android:layout_height="200dp"
-                app:srcCompat="@drawable/arrow"
-                android:layout_gravity="center"
-                android:id="@+id/arrow_button" />
-
-            <TextView
-                android:text="@string/placeholder"
-                android:layout_width="250dip"
-                android:layout_gravity="center"
-                android:layout_height="wrap_content"
-                android:textAlignment="center"
-                android:id="@+id/mainIsOn"
-                android:textSize="20sp" />
-
-
-        </LinearLayout>
-
-
-    </ScrollView>
-
-
-
+        android:layout_height="match_parent"
+        android:layout_below="@+id/toolbar"
+        android:id="@+id/alarmList"
+        android:layout_centerHorizontal="true" />
 
 
 </RelativeLayout>

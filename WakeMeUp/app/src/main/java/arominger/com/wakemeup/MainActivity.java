@@ -7,12 +7,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.AlarmClock;
+import android.support.annotation.NonNull;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -20,14 +22,18 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -37,184 +43,54 @@ import java.util.Random;
 public class MainActivity extends AppCompatActivity implements pickerListner
 {
 
+    alarmDBHelper helper;
+    SQLiteDatabase db;
 
     private static final String TAG = MainActivity.class.getSimpleName();
-    ImageView arrow;
-    Random rand = new Random();
-    PendingIntent pendingIntent;
-
-
-    boolean IS_ON;
-    public AlarmManager mgr;
-    AlarmManager manager;
-
-    MainActivity ma = this;
-    changedReciver cr;
-    TextView isOn;
-    String[] stringarr = {
-            "No More Missed Meetings!",
-            "Ready to wake up on time?",
-            "Dont forget breakfast!",
-            "Get some rest!",
-            "Dont miss that midterm!",
-            "Wake up bright and early!",
-            "Where did that sheep come from?",
-            "Time for some ZZZ's!",
-    };
     private int newAlarmHour;
     private int newAlarmMinute;
     private int dayPicked;
     private int monthPicked;
     private int yearPicked;
+    public ListView alarmList;
+    ArrayList<Long> list;
+
+    alarmListAdaptor adapter;
 
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
-        manager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        AudioManager am = (AudioManager)this.getSystemService(Context.AUDIO_SERVICE);
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        String vs = sharedPref.getString("pref_alrm", "100%");
-        Log.i("max alarm:", vs);
-        int max;
-        if(vs.length() == 3)
-        {
-            vs =  vs.substring(0,2);
-            vs = "." + vs;
-            float f = Float.parseFloat(vs);
-            max = (int) (am.getStreamMaxVolume(AudioManager.STREAM_ALARM) * f);
-
-        }
-        else
-        {
-            max = am.getStreamMaxVolume(AudioManager.STREAM_ALARM);
-        }
-        Log.i("Max:", "" + max);
-        IS_ON = false;
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+         list = Utilities.getAllAlarms(this);
+        adapter = new alarmListAdaptor();
+
+        helper = new alarmDBHelper(this);
+        db = helper.getReadableDatabase();
 
         //Declare Managers
-       mgr = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);;
 
 
         //Declare Views
-        isOn = (TextView) findViewById(R.id.mainIsOn);
-        arrow = (ImageView) findViewById(R.id.arrow_button);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        final Drawable arrowW = getDrawable(R.drawable.arrow);
-
-
+        alarmList = (ListView) findViewById(R.id.alarmList);
 
         //Set Toolbar
         setSupportActionBar(toolbar);
 
-        //Animations
-        final RotateAnimation rotateToTop = new RotateAnimation(0,180,Animation.RELATIVE_TO_SELF,0.5f,Animation.RELATIVE_TO_SELF,0.5f);
-            rotateToTop.setDuration(300);
-            rotateToTop.setInterpolator(new AccelerateInterpolator());
-            rotateToTop.setFillAfter(true);
-            rotateToTop.setAnimationListener(new Animation.AnimationListener() {
-            Drawable df;
-            @Override
-            public void onAnimationStart(Animation animation) {
 
-            }
+        Log.v(TAG + " LIST SIZE","" + list.size());
+        populateListView();
 
-            @Override
-            public void onAnimationEnd(Animation animation)
-            {
-                String text = getResources().getString(R.string.strIsRunning) + " " + stringarr[rand.nextInt(stringarr.length - 1)];
-                isOn.setText(text);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    arrowW.setTint(getResources().getColor(R.color.colorAccent,  null));
-                }
-                //arrow.animate().rotationBy(180f).setDuration(300).setInterpolator(new AccelerateInterpolator()).start();
-                arrow.setImageDrawable(arrowW);
+    }
 
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
-            }
-        });
-        final RotateAnimation rotateToBottom = new RotateAnimation(180,0, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-            rotateToBottom.setDuration(300);
-            rotateToBottom.setInterpolator(new AccelerateInterpolator());
-            rotateToBottom.setFillAfter(true);
-            rotateToBottom.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                isOn.setText(R.string.strIsNotOn);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    arrowW.setTint(getResources().getColor(R.color.colorPrimaryDark,  null));
-                }
-                arrow.setImageDrawable(arrowW);
-
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
-            }
-        });
-
-        //Set Values
-        isOn.setText(R.string.strIsNotOn);
-        assert arrowW != null;
-        Drawable mDrawableArrow = arrowW.mutate();
-        mDrawableArrow = DrawableCompat.wrap(mDrawableArrow);
-
-
-
-
-        //Arrow color change
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-        {
-            DrawableCompat.setTint(mDrawableArrow, getResources().getColor(R.color.colorPrimaryDark, null));
-        }
-        arrow.setImageDrawable(arrowW);
-
-
-        arrow.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                if(IS_ON)
-                {
-                    Log.i("unregistering", "Was on");
-                    //ma.unregisterReceiver(cr);
-                    MainActivity.this.arrow.startAnimation(rotateToBottom);
-                    IS_ON = false;
-                }
-                else
-                {
-
-                    if(mgr.getNextAlarmClock() != null)
-                    {
-                        Log.i(TAG, "Next alarm at " + mgr.getNextAlarmClock().getTriggerTime());
-                    }
-
-                    cr = new changedReciver();
-                    registerReceiver(cr, new IntentFilter(AlarmManager.ACTION_NEXT_ALARM_CLOCK_CHANGED));
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        registerReceiver(cr, new IntentFilter(AlarmClock.ACTION_DISMISS_ALARM));
-                    }
-
-                    MainActivity.this.arrow.startAnimation(rotateToTop);
-                    IS_ON = true;
-                }
-            }
-        });
+    @Override
+    protected void onResume()
+    {
+        this.updateList();
+        super.onResume();
     }
 
     @Override
@@ -235,22 +111,16 @@ public class MainActivity extends AppCompatActivity implements pickerListner
             default:
 
                 break;
-
-
         }
         return true;
     }
-
-
     public void makeNewAlarm(MenuItem item)
     {
         DialogFragment datePicker = new datePicker();
         datePicker.show(getFragmentManager(), "datePicker");
         DialogFragment timePicker = new timePicker();
         timePicker.show(getFragmentManager(), "picker");
-
     }
-
     @Override
     public void setTimes(int hourPicked, int minutePicked)
     {
@@ -264,36 +134,65 @@ public class MainActivity extends AppCompatActivity implements pickerListner
         this.dayPicked = dayPicked;
         this.monthPicked = monthPicked;
         this.yearPicked = yearPicked;
-        createNewAlarm(newAlarmMinute,newAlarmHour,dayPicked,monthPicked,yearPicked);
-
+        Utilities.createNewAlarm(this,newAlarmMinute,newAlarmHour,dayPicked,monthPicked,yearPicked,TAG);
+        updateList();
     }
-    private void createNewAlarm(int minute, int hour, int day, int month, int year)
+
+    public void populateListView()
+    {
+            alarmList.setAdapter(adapter);
+    }
+    private void updateList()
+    {
+        list = Utilities.getAllAlarms(this);
+        adapter = new alarmListAdaptor();
+        alarmList.setAdapter(adapter);
+    }
+
+    public class alarmListAdaptor extends ArrayAdapter<Long>
     {
 
-        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy, hh:mm aa", Locale.US);
-        Calendar c = Calendar.getInstance();
-        PendingIntent pendingIntent;
-        Log.i(TAG, "Hour: " + hour);
-        Log.i(TAG, "Minute: " + minute);
-        Log.i(TAG, "Day: " + day);
-        Log.i(TAG, "Month: " + month);
-        Log.i(TAG, "Year: " + year);
+        alarmListAdaptor()
+        {
+            super(MainActivity.this, R.layout.alarminlist, list);
+        }
 
+        @NonNull
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent)
+        {
+           View itemView = convertView;
+            if (itemView ==null)
+            {
+                itemView = getLayoutInflater().inflate(R.layout.alarminlist, parent, false);
+            }
+            final long alarmLong = list.get(position);
+            TextView timeInList = (TextView) itemView.findViewById(R.id.timeList);
+            TextView dateInList = (TextView) itemView.findViewById(R.id.dateList);
+            ImageView deleteAlarm = (ImageView) itemView.findViewById(R.id.deleteAlarm);
+            Calendar c = Calendar.getInstance();
+            c.setTimeInMillis(alarmLong);
+            SimpleDateFormat sdf = new SimpleDateFormat("hh:mm");
+            SimpleDateFormat sdf2 = new SimpleDateFormat("dd/MM/yyyy");
+            timeInList.setText(sdf.format(c.getTime()));
+            dateInList.setText(sdf2.format(c.getTime()));
 
-        c.set(Calendar.YEAR,year);
-        c.set(Calendar.DAY_OF_YEAR, day);
-        c.set(Calendar.MINUTE, minute);
-        c.set(Calendar.HOUR_OF_DAY, hour);
-        c.set(Calendar.SECOND, 0);
-        c.add(Calendar.MONTH, month - c.get(Calendar.MONTH));
+            deleteAlarm.setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View v)
+                {
+                    Utilities.deleteAlarm(MainActivity.this, alarmLong);
+                    MainActivity.this.updateList();
 
-        Intent i = new Intent(this, alarmReciver.class);
-        pendingIntent = PendingIntent.getBroadcast(this, 2, i,PendingIntent.FLAG_UPDATE_CURRENT);
-        manager.setExact(AlarmManager.RTC_WAKEUP, c.getTimeInMillis(), pendingIntent);
+                }
+            });
 
-        Toast.makeText(this, "New alarm: " + sdf.format(new Date(c.getTimeInMillis())), Toast.LENGTH_LONG).show();
+            return itemView;
 
-
+        }
     }
+
+
 }
 

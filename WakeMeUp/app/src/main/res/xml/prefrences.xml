@@ -5,6 +5,11 @@
             android:title="Set Volume on Alarm"
             android:summary="Sets the alarm volume to the selected level when an alarm goes off"
             />
+        <EditTextPreference
+                android:key="pref_snooze"
+                android:title="Snooze Length Maximum"
+                android:inputType="number"
+                android:summary="Set the MAXIMUM value that the random snooze length can be"/>
 
 
 

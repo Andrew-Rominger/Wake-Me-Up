@@ -3,6 +3,8 @@
     package="arominger.com.wakemeup">
 
     <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
 
     <application
         android:allowBackup="true"
@@ -17,21 +19,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".SettingsActivity"/>
+        <activity android:name=".SettingsActivity" />
+        <activity android:name=".alarmRinging"
+            android:showOnLockScreen="true"
+            android:screenOrientation="sensorPortrait"/>
 
         <receiver
-            android:name=".alarmReciverVolume"
+            android:name=".alarmReciver"
             android:enabled="true" />
-        <receiver
-            android:name=".changedReciver"
-            android:enabled="true" />
-        <receiver
-            android:name=".dismissedreciver"
-            android:enabled="true" />
-        <receiver android:name=".alarmReciver" android:enabled="true"/>
 
-        <service android:name=".AlarmPlayingService"/>
-
+        <service android:name=".AlarmPlayingService" />
 
 
     </application>
