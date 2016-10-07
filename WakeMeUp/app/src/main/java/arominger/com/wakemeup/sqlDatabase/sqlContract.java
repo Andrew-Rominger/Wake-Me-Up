@@ -1,4 +1,4 @@
-package arominger.com.wakemeup;
+package arominger.com.wakemeup.sqlDatabase;
 
 import android.provider.BaseColumns;
 

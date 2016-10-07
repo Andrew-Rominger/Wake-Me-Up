@@ -1,17 +1,10 @@
-package arominger.com.wakemeup;
+package arominger.com.wakemeup.Recivers;
 
-import android.app.AlarmManager;
-import android.app.KeyguardManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
-import android.preference.PreferenceManager;
-import android.util.Log;
-import android.view.WindowManager;
-import android.widget.Toast;
+
+import arominger.com.wakemeup.Activities.alarmRinging;
 
 /**
  * Created by Andrew on 10/1/2016.

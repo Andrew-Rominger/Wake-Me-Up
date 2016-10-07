@@ -1,9 +1,9 @@
-package arominger.com.wakemeup;
+package arominger.com.wakemeup.Activities;
 
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -13,12 +13,15 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.google.gson.Gson;
-
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Random;
+
+import arominger.com.wakemeup.Classes.Utilities;
+import arominger.com.wakemeup.R;
+import arominger.com.wakemeup.Services.AlarmPlayingService;
+import arominger.com.wakemeup.sqlDatabase.alarmDBHelper;
+import arominger.com.wakemeup.sqlDatabase.sqlContract;
 
 public class alarmRinging extends AppCompatActivity
 {
@@ -27,6 +30,7 @@ public class alarmRinging extends AppCompatActivity
     TextView date, time;
     Button dismiss, snooze;
     int old;
+    Vibrator vb;
 
     alarmDBHelper helper;
     SQLiteDatabase db;
@@ -37,6 +41,7 @@ public class alarmRinging extends AppCompatActivity
     {
         startAlarm = new Intent(this, AlarmPlayingService.class);
         super.onCreate(savedInstanceState);
+        vb = (Vibrator) getSystemService(VIBRATOR_SERVICE);
         setContentView(R.layout.activity_alarm_ringing);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON|
                 WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD|
@@ -62,6 +67,11 @@ public class alarmRinging extends AppCompatActivity
         date.setText(dates);
         old = Utilities.maxAlarmVolume(this);
         startService(startAlarm);
+        if(vb.hasVibrator())
+        {
+            long[] list = {500,1000};
+            vb.vibrate(list,0);
+        }
 
     }
 
@@ -73,6 +83,7 @@ public class alarmRinging extends AppCompatActivity
         String[] selectionArgs = {"" + c.getTimeInMillis()};
         db.delete(sqlContract.FeedEntry.TABLE_NAME, selection, selectionArgs);
         Utilities.setAlarmVolume(old,this);
+        vb.cancel();
         this.finish();
 
     }
@@ -93,6 +104,8 @@ public class alarmRinging extends AppCompatActivity
         Utilities.createNewAlarm(this, newCal);
         Utilities.setAlarmVolume(old,this);
         stopService(new Intent(this, AlarmPlayingService.class));
+        vb.cancel();
+
         this.finish();
 
     }

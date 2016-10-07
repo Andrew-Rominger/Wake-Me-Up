@@ -5,6 +5,8 @@
     <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:allowBackup="true"
@@ -19,16 +21,24 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".SettingsActivity" />
-        <activity android:name=".alarmRinging"
+        <activity android:name=".Activities.SettingsActivity" />
+        <activity android:name=".Activities.alarmRinging"
             android:showOnLockScreen="true"
             android:screenOrientation="sensorPortrait"/>
 
         <receiver
-            android:name=".alarmReciver"
+            android:name=".Recivers.alarmReciver"
             android:enabled="true" />
+        <receiver
+            android:name=".Recivers.bootUpReciver"
+            android:label="StartServiceAtBoot">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
 
-        <service android:name=".AlarmPlayingService" />
+        <service android:name=".Services.AlarmPlayingService" />
+        <service android:name=".Services.bootUpService"/>
 
 
     </application>

@@ -1,4 +1,4 @@
-package arominger.com.wakemeup;
+package arominger.com.wakemeup.Classes;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -9,13 +9,9 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.media.AudioManager;
-import android.media.session.PlaybackState;
-import android.preference.ListPreference;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
-
-import com.google.gson.Gson;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -23,30 +19,39 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-/**
- * Created by Andrew on 10/4/2016.
- */
+import arominger.com.wakemeup.Recivers.alarmReciver;
+import arominger.com.wakemeup.adapter.recViewAdapter;
+import arominger.com.wakemeup.sqlDatabase.alarmDBHelper;
+import arominger.com.wakemeup.sqlDatabase.sqlContract;
 
-public class Utilities {
-    public static void createNewAlarm(Context context, int minute, int hour, int day, int month, int year, String TAG) {
+/*
+Base class for utilities needed by app
+ */
+public class Utilities
+{
+
+    /**
+     * @param context The context to use for making the alarm manager
+     * @param minute The minute for the alarm
+     * @param hour The hour for the alarm
+     * @param day The day for the alarm
+     * @param month The month for the alarm
+     * @param year The year for the alarm
+     */
+    public static void createNewAlarm(Context context, int minute, int hour, int day, int month, int year)
+    {
         AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
         SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy, hh:mm aa", Locale.US);
         Calendar c = Calendar.getInstance();
         PendingIntent pendingIntent;
-        Log.i(TAG, "Hour: " + hour);
-        Log.i(TAG, "Minute: " + minute);
-        Log.i(TAG, "Day: " + day);
-        Log.i(TAG, "Month: " + month);
-        Log.i(TAG, "Year: " + year);
-
 
         c.set(Calendar.YEAR, year);
-        c.set(Calendar.DAY_OF_YEAR, day);
+        c.set(Calendar.DAY_OF_MONTH, day);
         c.set(Calendar.MINUTE, minute);
         c.set(Calendar.HOUR_OF_DAY, hour);
         c.set(Calendar.SECOND, 0);
-        c.add(Calendar.MONTH, month - c.get(Calendar.MONTH));
+        c.set(Calendar.MONTH, month);
 
         Intent i = new Intent(context, alarmReciver.class);
         pendingIntent = PendingIntent.getBroadcast(context, 2, i, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -57,13 +62,9 @@ public class Utilities {
         ContentValues values = new ContentValues();
         String date = String.valueOf(c.getTimeInMillis());
         values.put(sqlContract.FeedEntry.COLUMN_TIME_MS, date);
-        long newRowId = db.insert(sqlContract.FeedEntry.TABLE_NAME, null, values);
+        db.insert(sqlContract.FeedEntry.TABLE_NAME, null, values);
 
         Toast.makeText(context, "New alarm: " + sdf.format(new Date(c.getTimeInMillis())), Toast.LENGTH_LONG).show();
-
-
-
-
     }
 
     public static int maxAlarmVolume(Context c)
@@ -145,7 +146,7 @@ public class Utilities {
         values.put(sqlContract.FeedEntry.COLUMN_TIME_MS, date);
         long newRowId = db.insert(sqlContract.FeedEntry.TABLE_NAME, null, values);
 
-        Toast.makeText(context, "New alarm: " + sdf.format(new Date(c.getTimeInMillis())), Toast.LENGTH_LONG).show();
+        //Toast.makeText(context, "New alarm: " + sdf.format(new Date(c.getTimeInMillis())), Toast.LENGTH_LONG).show();
 
     }
     public static ArrayList<Long> getAllAlarms(Context context)
@@ -165,6 +166,7 @@ public class Utilities {
             list.add(c.getLong(c.getColumnIndexOrThrow(sqlContract.FeedEntry.COLUMN_TIME_MS)));
             c.moveToNext();
         }
+
 
         return list;
 
@@ -187,4 +189,68 @@ public class Utilities {
     }
 
 
+    public static int getPosition(Calendar c, Context context)
+    {
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy, hh:mm aa", Locale.US);
+        Log.v("L: ",sdf.format(new Date(c.getTimeInMillis())));
+        alarmDBHelper helper = new alarmDBHelper(context);
+        long l = c.getTimeInMillis();
+        int position = 0;
+        SQLiteDatabase db = helper.getReadableDatabase();
+        ArrayList<Long> list = new ArrayList<>();
+        String[] prjection = {
+                sqlContract.FeedEntry._ID,
+                sqlContract.FeedEntry.COLUMN_TIME_MS
+        };
+        String sortOrder = sqlContract.FeedEntry.COLUMN_TIME_MS + " ASC";
+        Cursor curs = db.query(sqlContract.FeedEntry.TABLE_NAME, prjection, null,null,null,null,sortOrder);
+        curs.moveToFirst();
+        while (!curs.isAfterLast())
+        {
+           long l2 = curs.getLong(curs.getColumnIndexOrThrow(sqlContract.FeedEntry.COLUMN_TIME_MS));
+            Log.v("L: ", l+"");
+            Log.v("L2: ", l2+"");
+
+            if(l > l2)
+            {
+                position++;
+            }
+            else
+            {
+                break;
+            }
+            curs.moveToNext();
+        }
+        curs.close();
+        return position;
+
+    }
+
+    public static void addAlarmtoList(recViewAdapter ad, int minute, int hour, int day, int month, int year, Context con, Long l)
+    {
+        alarmInList al = new alarmInList();
+        Calendar c = createCalender(minute,hour,day,month,year);
+        SimpleDateFormat sdf1 = new SimpleDateFormat("MM/dd/yyyy");
+        SimpleDateFormat sdf2 = new SimpleDateFormat("hh:mm aa");
+
+
+        al.setDate(sdf1.format(c.getTime()));
+        al.setTime(sdf2.format(c.getTime()));
+        al.setTimeL(l);
+        ad.addItem(getPosition(createCalender(minute,hour,day,month,year),con),al);
+
+
+    }
+
+    public static Calendar createCalender(int minute, int hour, int day, int month, int year)
+    {
+
+        Calendar c = Calendar.getInstance();
+        c.set(Calendar.MINUTE, minute);
+        c.set(Calendar.HOUR_OF_DAY, hour);
+        c.set(Calendar.DAY_OF_MONTH, day);
+        c.set(Calendar.MONTH, month);
+        c.set(Calendar.YEAR, year);
+        return c;
+    }
 }

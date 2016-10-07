@@ -12,4 +12,5 @@
     <string name="time">TIME</string>
     <string name="dismiss">Dismiss</string>
     <string name="snooze">Snooze</string>
+    <string name="title">Title</string>
 </resources>

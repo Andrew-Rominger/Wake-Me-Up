@@ -1,43 +1,30 @@
 package arominger.com.wakemeup;
 
-import android.app.AlarmManager;
 import android.app.DialogFragment;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.drawable.Drawable;
-import android.media.AudioManager;
-import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.provider.AlarmClock;
-import android.support.annotation.NonNull;
-import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.animation.AccelerateInterpolator;
-import android.view.animation.Animation;
-import android.view.animation.RotateAnimation;
-import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Random;
+
+import arominger.com.wakemeup.Activities.SettingsActivity;
+import arominger.com.wakemeup.Classes.Utilities;
+import arominger.com.wakemeup.Classes.alarmInList;
+import arominger.com.wakemeup.Pickers.datePicker;
+import arominger.com.wakemeup.Pickers.pickerListner;
+import arominger.com.wakemeup.Pickers.timePicker;
+import arominger.com.wakemeup.adapter.recViewAdapter;
+import arominger.com.wakemeup.sqlDatabase.alarmDBHelper;
 
 
 public class MainActivity extends AppCompatActivity implements pickerListner
@@ -52,10 +39,11 @@ public class MainActivity extends AppCompatActivity implements pickerListner
     private int dayPicked;
     private int monthPicked;
     private int yearPicked;
+    RecyclerView rv;
+    recViewAdapter adapter;
     public ListView alarmList;
     ArrayList<Long> list;
 
-    alarmListAdaptor adapter;
 
 
 
@@ -65,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements pickerListner
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
          list = Utilities.getAllAlarms(this);
-        adapter = new alarmListAdaptor();
+
 
         helper = new alarmDBHelper(this);
         db = helper.getReadableDatabase();
@@ -75,22 +63,36 @@ public class MainActivity extends AppCompatActivity implements pickerListner
 
         //Declare Views
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        alarmList = (ListView) findViewById(R.id.alarmList);
 
         //Set Toolbar
         setSupportActionBar(toolbar);
+        setUpRecView();
 
 
         Log.v(TAG + " LIST SIZE","" + list.size());
-        populateListView();
 
+
+    }
+
+    private void setUpRecView()
+    {
+        rv = (RecyclerView) findViewById(R.id.alarmList);
+        adapter = new recViewAdapter(this, alarmInList.getData(this), this);
+        rv.setAdapter(adapter);
+
+        LinearLayoutManager lmV = new LinearLayoutManager(this);
+        lmV.setOrientation(LinearLayoutManager.VERTICAL);
+        rv.setLayoutManager(lmV);
+        rv.setItemAnimator(new DefaultItemAnimator());
     }
 
     @Override
     protected void onResume()
     {
-        this.updateList();
         super.onResume();
+        Log.v(TAG, "RESEUME");
+        adapter = new recViewAdapter(this, alarmInList.getData(this),this);
+        rv.setAdapter(adapter);
     }
 
     @Override
@@ -128,70 +130,32 @@ public class MainActivity extends AppCompatActivity implements pickerListner
         this.newAlarmMinute = minutePicked;
     }
 
+
     @Override
     public void setDates(int dayPicked, int monthPicked, int yearPicked)
     {
         this.dayPicked = dayPicked;
         this.monthPicked = monthPicked;
         this.yearPicked = yearPicked;
-        Utilities.createNewAlarm(this,newAlarmMinute,newAlarmHour,dayPicked,monthPicked,yearPicked,TAG);
-        updateList();
+        Utilities.createNewAlarm(this,newAlarmMinute,newAlarmHour,dayPicked,monthPicked,yearPicked);
+        Calendar c = Utilities.createCalender(newAlarmMinute,newAlarmHour,dayPicked,monthPicked,yearPicked);
+        Utilities.addAlarmtoList(adapter, newAlarmMinute,newAlarmHour,dayPicked,monthPicked,yearPicked,this, c.getTimeInMillis());
+
+
+
+        //Toast.makeText(this, "New alarm: " + sdf3.format(new Date(c.getTimeInMillis())), Toast.LENGTH_LONG).show();
+
+
     }
 
-    public void populateListView()
+    public void helper(int position)
     {
-            alarmList.setAdapter(adapter);
-    }
-    private void updateList()
-    {
-        list = Utilities.getAllAlarms(this);
-        adapter = new alarmListAdaptor();
-        alarmList.setAdapter(adapter);
+        ArrayList<alarmInList> l1 = alarmInList.getData(this);
+        Utilities.deleteAlarm(this, l1.get(position).getTimeL());
     }
 
-    public class alarmListAdaptor extends ArrayAdapter<Long>
-    {
 
-        alarmListAdaptor()
-        {
-            super(MainActivity.this, R.layout.alarminlist, list);
-        }
 
-        @NonNull
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent)
-        {
-           View itemView = convertView;
-            if (itemView ==null)
-            {
-                itemView = getLayoutInflater().inflate(R.layout.alarminlist, parent, false);
-            }
-            final long alarmLong = list.get(position);
-            TextView timeInList = (TextView) itemView.findViewById(R.id.timeList);
-            TextView dateInList = (TextView) itemView.findViewById(R.id.dateList);
-            ImageView deleteAlarm = (ImageView) itemView.findViewById(R.id.deleteAlarm);
-            Calendar c = Calendar.getInstance();
-            c.setTimeInMillis(alarmLong);
-            SimpleDateFormat sdf = new SimpleDateFormat("hh:mm");
-            SimpleDateFormat sdf2 = new SimpleDateFormat("dd/MM/yyyy");
-            timeInList.setText(sdf.format(c.getTime()));
-            dateInList.setText(sdf2.format(c.getTime()));
-
-            deleteAlarm.setOnClickListener(new View.OnClickListener()
-            {
-                @Override
-                public void onClick(View v)
-                {
-                    Utilities.deleteAlarm(MainActivity.this, alarmLong);
-                    MainActivity.this.updateList();
-
-                }
-            });
-
-            return itemView;
-
-        }
-    }
 
 
 }

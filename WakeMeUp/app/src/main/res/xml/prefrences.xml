@@ -10,9 +10,4 @@
                 android:title="Snooze Length Maximum"
                 android:inputType="number"
                 android:summary="Set the MAXIMUM value that the random snooze length can be"/>
-
-
-
-
-
 </PreferenceScreen>

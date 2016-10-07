@@ -1,19 +1,17 @@
-package arominger.com.wakemeup;
+package arominger.com.wakemeup.Services;
 
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
-import android.app.TaskStackBuilder;
 import android.content.Intent;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.os.Binder;
 import android.os.IBinder;
+import android.os.Vibrator;
 import android.support.annotation.Nullable;
-import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
 import java.util.Random;
+
+import arominger.com.wakemeup.R;
 
 /**
  * Created by Andrew on 10/1/2016.
@@ -22,6 +20,7 @@ public class AlarmPlayingService extends Service {
     private static final String TAG = AlarmPlayingService.class.getSimpleName();
 
     MediaPlayer mp;
+    Vibrator vb;
     NotificationManager nf;
     Random r;
 
@@ -37,6 +36,7 @@ public class AlarmPlayingService extends Service {
     {
         r = new Random();
         int sound = r.nextInt(5);
+        vb = (Vibrator) this.getSystemService(VIBRATOR_SERVICE);
 
         switch (sound)
         {
@@ -64,6 +64,7 @@ public class AlarmPlayingService extends Service {
 
         mp.setLooping(true);
         mp.start();
+
 
         return START_NOT_STICKY;
     }

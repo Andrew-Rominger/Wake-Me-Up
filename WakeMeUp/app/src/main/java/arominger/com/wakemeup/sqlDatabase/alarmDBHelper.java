@@ -1,4 +1,4 @@
-package arominger.com.wakemeup;
+package arominger.com.wakemeup.sqlDatabase;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -8,8 +8,9 @@ import android.database.sqlite.SQLiteOpenHelper;
  * Created by Andrew on 10/4/2016.
  */
 
-public class alarmDBHelper extends SQLiteOpenHelper {
-    public static final int DATABASE_VERSION =1;
+public class alarmDBHelper extends SQLiteOpenHelper
+{
+    private static final int DATABASE_VERSION =1;
     public static final String DATABASE_NAME = "alarms.db";
     private static final String TEXT_TYPE = " TEXT";
     private static final String COMMA_SEP = ",";

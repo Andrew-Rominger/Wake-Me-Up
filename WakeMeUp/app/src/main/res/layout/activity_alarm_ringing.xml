@@ -6,23 +6,17 @@
     android:layout_height="match_parent"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:background="@color/colorPrimaryDark"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="arominger.com.wakemeup.alarmRinging">
-
-    <TextView
-        android:text="@string/alarm"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:id="@+id/alarmName" />
+    tools:context="arominger.com.wakemeup.Activities.alarmRinging">
 
     <TextView
         android:text="@string/time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/alarmName"
+        android:textColor="@color/colorAccent"
+        android:textSize="50sp"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="47dp"
         android:id="@+id/alarmTime" />
@@ -31,21 +25,12 @@
         android:text="DATE"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textColor="@color/colorPrimary"
         android:layout_below="@+id/alarmTime"
+        android:textSize="25sp"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="46dp"
         android:id="@+id/alarmDate" />
-
-    <Button
-        android:text="@string/snooze"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/alarmDate"
-        android:layout_toStartOf="@+id/alarmName"
-        android:layout_marginEnd="24dp"
-        android:layout_marginTop="164dp"
-        android:onClick="snoozeAlarm"
-        android:id="@+id/snoozeButton" />
 
     <Button
         android:text="@string/dismiss"
@@ -53,7 +38,22 @@
         android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/snoozeButton"
         android:onClick="dismissAlarm"
-        android:layout_toEndOf="@+id/alarmName"
+        android:background="@color/white"
+        android:textColor="@color/colorPrimary"
         android:layout_marginStart="34dp"
         android:id="@+id/dismissButton" />
+
+    <Button
+        android:text="@string/snooze"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimary"
+        android:layout_marginEnd="27dp"
+        android:layout_marginTop="174dp"
+        android:onClick="snoozeAlarm"
+        android:id="@+id/snoozeButton"
+        android:textColor="@color/white"
+        android:layout_below="@+id/alarmDate"
+        android:layout_toLeftOf="@id/dismissButton"
+        android:layout_alignParentEnd="true" />
 </RelativeLayout>
